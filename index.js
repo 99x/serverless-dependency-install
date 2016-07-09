@@ -76,9 +76,8 @@ module.exports = function(S) {
         }
 
         install() {
-            var paths = [S.getProject().getRootPath()];
-            di.init(paths[0] + "/libs");
-            di.install(paths, function() {
+            di.init(S.getProject().custom.shared || S.getProject().getRootPath() + "/shared");
+            di.install([S.getProject().getRootPath()], function() {
                 SCli.log("Dependencies installed successfully.");
             });
         }
