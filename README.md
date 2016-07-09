@@ -1,6 +1,5 @@
 serverless-dependency-install
 =============================
-
 [![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
 [![npm version](https://badge.fury.io/js/serverless-dependency-install.svg)](https://badge.fury.io/js/serverless-dependency-install)
 [![license](https://img.shields.io/npm/l/serverless-dependency-install.svg)](https://www.npmjs.com/package/serverless-dependency-install)
