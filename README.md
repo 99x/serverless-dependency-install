@@ -28,7 +28,7 @@ This creates the template code for local shared dependency, inside the directory
 ### More on local shared dependencies
 What if you need to share code, but don't wish to publish packages in NPM Registry? You can use the local shared dependencies.
 
-1. Create a directory(e.g 'local_shared_dependencies') in your codebase to store each local dependency(library) code. Create directories for each of the dependencies with a index.js inside, as shown below.
+1. Create a directory(e.g 'local_shared_dependencies') in your serverless root to store shared local dependency(library) code. Create directories for each of the dependencies with a index.js inside, as shown below.
     ```
     __/local_shared_dependencies
         |__dependency-a
