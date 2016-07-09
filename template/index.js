@@ -1,4 +1,4 @@
 var dependencyModule = function() {
-    console.log("hello");
+    // Your shared dependency module
 };
 module.exports = dependencyModule;
