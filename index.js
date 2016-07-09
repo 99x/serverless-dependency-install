@@ -4,10 +4,9 @@ const BbPromise = require('bluebird'),
     di = require('dependency-install'),
     fs = require('fs'),
     mkdirp = require('mkdirp'),
-    rmdir = require('rmdir'),
     path = require('path');
 
-module.exports = function(S) {
+module.exports = function (S) {
 
     const SCli = require(S.getServerlessPath('utils/cli')),
         SUtils = S.utils;
@@ -57,7 +56,7 @@ module.exports = function(S) {
          * - You can also access other Project-specific data @ this.S Again, if you mess with data on this object, it could break everything, so make sure you know what you're doing ;)
          */
         create(evt) {
-            return new BbPromise(function(resolve) {
+            return new BbPromise(function (resolve) {
                 let options = evt.options;
                 if (options.name && (typeof options.name === "string")) {
                     let dependencyName = options.name,
@@ -72,16 +71,14 @@ module.exports = function(S) {
                     } else {
                         SCli.log("Dependency package already exists");
                     }
-                } else {
-                    //TODO: Add cli input prompt to capture user input.
                 }
             });
         }
 
         install() {
-            return new BbPromise(function(resolve) {
+            return new BbPromise(function (resolve) {
                 di.init(S.getProject().custom.shared || S.getProject().getRootPath() + "/shared");
-                di.install([S.getProject().getRootPath()], function() {
+                di.install([S.getProject().getRootPath()], function () {
                     SCli.log("Dependencies installed successfully.");
                 });
             });
