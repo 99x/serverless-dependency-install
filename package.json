@@ -36,6 +36,8 @@
     "mocha": "^2.2.5"
   },
   "dependencies": {
-    "dependency-install": "0.0.6"
+    "dependency-install": "0.0.6",
+    "mkdirp": "^0.5.1",
+    "rmdir": "^1.2.0"
   }
 }

@@ -1,11 +1,16 @@
 'use strict';
 
 const BbPromise = require('bluebird'),
-      di = require('dependency-install');
+    di = require('dependency-install'),
+    fs = require('fs'),
+    mkdirp = require('mkdirp'),
+    rmdir = require('rmdir'),
+    path = require('path');
 
 module.exports = function(S) {
 
-    const SCli = require(S.getServerlessPath('utils/cli'));
+    const SCli = require(S.getServerlessPath('utils/cli')),
+        SUtils = S.utils;
 
     class DependencyInstall extends S.classes.Plugin {
 
@@ -31,30 +36,25 @@ module.exports = function(S) {
                 options: [{
                     option: 'name',
                     shortcut: 'n',
-                    description: 'Creates a new dependency in libs directory.'
+                    description: 'Creates a new dependency in shared directory.'
                 }]
             });
             S.addAction(this.remove.bind(this), {
                 handler: 'dependencyRemove',
-                description: 'Remove a custom dependency',
+                description: 'Removes a custom dependency',
                 context: 'di',
                 contextAction: 'remove',
                 options: [{
                     option: 'name',
                     shortcut: 'n',
-                    description: 'Removes a dependency in libs directory.'
+                    description: 'Removes a dependency in shared directory.'
                 }]
             });
             S.addAction(this.install.bind(this), {
                 handler: 'dependencyRemove',
                 description: 'Install dependencies of functions',
                 context: 'di',
-                contextAction: 'install',
-                options: [{
-                    option: 'install',
-                    shortcut: 'i',
-                    description: 'Install dependencies of all functions'
-                }]
+                contextAction: 'install'
             });
 
             return BbPromise.resolve();
@@ -68,17 +68,53 @@ module.exports = function(S) {
          * - You can also access other Project-specific data @ this.S Again, if you mess with data on this object, it could break everything, so make sure you know what you're doing ;)
          */
         create(evt) {
-            // TODO: Implement custom dependency creation in libs
+            return new BbPromise(function(resolve) {
+                let options = evt.options;
+                if (options.name && (typeof options.name === "string")) {
+                    let dependencyName = options.name,
+                        sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
+                        dependencyPath = path.join(sharedDirPath + "/" + dependencyName),
+                        indexJs = fs.readFileSync(path.dirname(__filename) + '/template/index.js');
+
+                    if (!SUtils.dirExistsSync(dependencyPath)) {
+                        mkdirp.sync(dependencyPath);
+                        fs.writeFileSync(path.join(dependencyPath, 'index.js'), indexJs);
+                        SCli.log("Dependency created successfully");
+                    } else {
+                        SCli.log("Dependency package already exists");
+                    }
+                } else {
+                    //TODO: Add cli input prompt to capture user input.
+                }
+            });
         }
 
         remove() {
-            // TODO: Implement custom dependency removal in libs
+            return new BbPromise(function(resolve) {
+                let options = evt.options;
+                if (options.name && (typeof options.name === "string")) {
+                    let dependencyName = options.name,
+                        sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
+                        dependencyPath = path.join(sharedDirPath + "/" + dependencyName);
+
+                    if (SUtils.dirExistsSync(dependencyPath)) {
+                        rmdir(dependencyPath);
+                        SCli.log("Dependency removed successfully");
+                    } else {
+                        SCli.log("Dependency package does not exists");
+                    }
+                } else {
+                    //TODO: Add cli input prompt to capture user input.
+                }
+            });
         }
 
         install() {
-            di.init(S.getProject().custom.shared || S.getProject().getRootPath() + "/shared");
-            di.install([S.getProject().getRootPath()], function() {
-                SCli.log("Dependencies installed successfully.");
+            return new BbPromise(function(resolve) {
+                di.init(S.getProject().custom.shared || S.getProject().getRootPath() + "/shared");
+                di.install([S.getProject().getRootPath()], function() {
+                    SCli.log("Dependencies installed successfully.");
+                });
             });
         }
 
