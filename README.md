@@ -1,6 +1,8 @@
 serverless-dependency-install
 =============================
 
+[![Join the chat at https://gitter.im/99xt/serverless-dependency-install](https://badges.gitter.im/99xt/serverless-dependency-install.svg)](https://gitter.im/99xt/serverless-dependency-install?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
 
 ## Install Plugin
