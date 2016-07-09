@@ -54,7 +54,7 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
     ```json
     {
         "dependencies": {},
-        "dependencies": {
+        "customDependencies": {
             "dependency-a" : "local",
             "dependency-b" : "local"
         }
