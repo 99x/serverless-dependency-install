@@ -1,0 +1,38 @@
+{
+    "name": "serverless-dependency-install",
+    "version": "0.0.1",
+    "engines": {
+        "node": ">=4.0"
+    },
+    "description": "Serverless dependency install plugin",
+    "author": "99xtechnology.com",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/99xt/serverless-dynamodb-local"
+    },
+    "keywords": [
+    "serverless framework plugin",
+    "serverless applications",
+    "serverless plugins",
+    "dependency management",
+    "dependency",
+    "custom dependency",
+    "custom dependency management",
+    "install dependency",
+    "dependencies",
+    "aws",
+    "amazon",
+    "amazon web services",
+    "serverless.com"
+  ],
+    "main": "index.js",
+    "bin": {},
+    "scripts": {
+        "test": "echo \"Warning: no test specified\" && exit 0"
+    },
+    "devDependencies": {
+        "chai": "^3.2.0",
+        "mocha": "^2.2.5"
+    }
+}
