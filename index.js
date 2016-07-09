@@ -31,7 +31,7 @@ module.exports = function(S) {
             S.addAction(this.create.bind(this), {
                 handler: 'dependencyCreate',
                 description: 'Create new custom dependency',
-                context: 'di',
+                context: 'dependency',
                 contextAction: 'create',
                 options: [{
                     option: 'name',
@@ -39,21 +39,10 @@ module.exports = function(S) {
                     description: 'Creates a new dependency in shared directory.'
                 }]
             });
-            S.addAction(this.remove.bind(this), {
-                handler: 'dependencyRemove',
-                description: 'Removes a custom dependency',
-                context: 'di',
-                contextAction: 'remove',
-                options: [{
-                    option: 'name',
-                    shortcut: 'n',
-                    description: 'Removes a dependency in shared directory.'
-                }]
-            });
             S.addAction(this.install.bind(this), {
                 handler: 'dependencyRemove',
                 description: 'Install dependencies of functions',
-                context: 'di',
+                context: 'dependency',
                 contextAction: 'install'
             });
 
@@ -82,26 +71,6 @@ module.exports = function(S) {
                         SCli.log("Dependency created successfully");
                     } else {
                         SCli.log("Dependency package already exists");
-                    }
-                } else {
-                    //TODO: Add cli input prompt to capture user input.
-                }
-            });
-        }
-
-        remove() {
-            return new BbPromise(function(resolve) {
-                let options = evt.options;
-                if (options.name && (typeof options.name === "string")) {
-                    let dependencyName = options.name,
-                        sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
-                        dependencyPath = path.join(sharedDirPath + "/" + dependencyName);
-
-                    if (SUtils.dirExistsSync(dependencyPath)) {
-                        rmdir(dependencyPath);
-                        SCli.log("Dependency removed successfully");
-                    } else {
-                        SCli.log("Dependency package does not exists");
                     }
                 } else {
                     //TODO: Add cli input prompt to capture user input.
