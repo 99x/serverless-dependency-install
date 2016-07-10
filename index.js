@@ -6,7 +6,7 @@ const BbPromise = require('bluebird'),
     mkdirp = require('mkdirp'),
     path = require('path');
 
-module.exports = function (S) {
+module.exports = function(S) {
 
     const SCli = require(S.getServerlessPath('utils/cli')),
         SUtils = S.utils;
@@ -56,10 +56,9 @@ module.exports = function (S) {
          * - You can also access other Project-specific data @ this.S Again, if you mess with data on this object, it could break everything, so make sure you know what you're doing ;)
          */
         create(evt) {
-            return new BbPromise(function (resolve) {
-                let options = evt.options;
-                if (options.name && (typeof options.name === "string")) {
-                    let dependencyName = options.name,
+            let _this = this,
+                createDependency = function() {
+                    let dependencyName = evt.options.name,
                         sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
                         dependencyPath = path.join(sharedDirPath + "/" + dependencyName),
                         indexJs = fs.readFileSync(path.dirname(__filename) + '/template/index.js');
@@ -67,21 +66,58 @@ module.exports = function (S) {
                     if (!SUtils.dirExistsSync(dependencyPath)) {
                         mkdirp.sync(dependencyPath);
                         fs.writeFileSync(path.join(dependencyPath, 'index.js'), indexJs);
-                        SCli.log("Dependency created successfully");
+                        SCli.log("Dependency created successfully".yellow);
                     } else {
-                        SCli.log("Dependency package already exists");
+                        SCli.log("Dependency package already exists".red);
                     }
-                }
-            });
+                };
+            _this.evt = evt;
+
+            return _this._prompt()
+                .bind(_this)
+                .then(createDependency);
+
         }
 
         install() {
-            return new BbPromise(function (resolve) {
+            return new BbPromise(function(resolve) {
                 di.init(S.getProject().custom.shared || S.getProject().getRootPath() + "/shared");
-                di.install([S.getProject().getRootPath()], function () {
+                di.install([S.getProject().getRootPath()], function() {
                     SCli.log("Dependencies installed successfully.");
                 });
             });
+        }
+
+        _prompt() {
+
+            let _this = this,
+                overrides = {
+                    name: _this.evt.options.name
+                };
+
+            if (!S.config.interactive) return BbPromise.resolve();
+
+            return BbPromise
+                .try(() => {
+                    // If name exists, skip
+                    if (_this.evt.options.name) return;
+
+                    let prompts = {
+                        properties: {
+                            name: {
+                                description: 'Enter the name of dependency: '.yellow,
+                                message: 'Dependency name must contain only letters, numbers, hyphens, or underscores. It should not be longer than 20 characters.',
+                                required: true,
+                                conform: function(functionName) {
+                                    return S.classes.Function.validateName(functionName);
+                                }
+                            }
+                        }
+                    };
+
+                    return _this.cliPromptInput(prompts, overrides)
+                        .then(answers => _this.evt.options.name = answers.name);
+                });
         }
 
     }
