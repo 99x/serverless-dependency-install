@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "dependency-install": "0.0.6",
+    "jsonfile": "^2.3.1",
     "lodash": "^4.13.1",
     "mkdirp": "^0.5.1"
   }

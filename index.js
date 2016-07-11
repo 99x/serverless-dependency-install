@@ -5,6 +5,7 @@ const BbPromise = require('bluebird'),
     fs = require('fs'),
     mkdirp = require('mkdirp'),
     _ = require('lodash'),
+    jsonfile = require('jsonfile'),
     path = require('path');
 
 module.exports = function(S) {
@@ -171,18 +172,29 @@ module.exports = function(S) {
 
                     // Blank space for neatness in the CLI
                     console.log('');
-                })
+                });
         }
 
         _processFunctions() {
             let _this = this;
 
-            if(_this.evt.options.selectedFunctions && _this.evt.options.selectedFunctions.length > 0){
-                console.log(_this.evt.options.selectedFunctions)
-                _(_this.evt.options.selectedFunctions).forEach(function(funcName){
-                    console.log(_this.project.getFunction(funcName).getRootPath());
+            if (_this.evt.options.selectedFunctions && _this.evt.options.selectedFunctions.length > 0) {
+                _(_this.evt.options.selectedFunctions).forEach(function(funcName) {
+                    let func = _this.project.getFunction(funcName),
+                        funcPackageJsonPath = path.join(func.getRootPath(), "package.json");
+
+                    jsonfile.readFile(funcPackageJsonPath, function(err, obj) {
+                        if (!obj.customDependencies) {
+                            obj.customDependencies = {};
+                        }
+                        obj.customDependencies[_this.evt.options.name] = "local";
+                        jsonfile.writeFileSync(funcPackageJsonPath, obj, {
+                            spaces: 2
+                        });
+                    });
+
                 });
-            }else {
+            } else {
                 return BbPromise.resolve();
             }
         }
