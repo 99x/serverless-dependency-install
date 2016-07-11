@@ -4,6 +4,7 @@ const BbPromise = require('bluebird'),
     di = require('dependency-install'),
     fs = require('fs'),
     mkdirp = require('mkdirp'),
+    _ = require('lodash'),
     path = require('path');
 
 module.exports = function(S) {
@@ -43,6 +44,17 @@ module.exports = function(S) {
                 description: 'Install dependencies of functions',
                 context: 'dependency',
                 contextAction: 'install'
+            });
+            S.addAction(this.attach.bind(this), {
+                handler: 'dependencyAttach',
+                description: 'Attach dependency to functions',
+                context: 'dependency',
+                contextAction: 'attach',
+                options: [{
+                    option: 'name',
+                    shortcut: 'n',
+                    description: 'Creates a new dependency in shared directory.'
+                }]
             });
 
             return BbPromise.resolve();
@@ -88,6 +100,18 @@ module.exports = function(S) {
             });
         }
 
+        attach(evt) {
+            let _this = this;
+            _this.evt = evt;
+            _this.project = S.getProject();
+            _this.evt.options.selectedFunctions = [];
+
+            return _this._prompt()
+                .bind(_this)
+                .then(_this._captureFunctions)
+                .then(_this._processFunctions);
+        }
+
         _prompt() {
 
             let _this = this,
@@ -118,6 +142,49 @@ module.exports = function(S) {
                     return _this.cliPromptInput(prompts, overrides)
                         .then(answers => _this.evt.options.name = answers.name);
                 });
+        }
+
+        _captureFunctions() {
+            let _this = this,
+                functions = SUtils.getFunctionsByCwd(_this.project.getAllFunctions()),
+                choices = [];
+
+            _.each(functions, function(func) {
+
+                choices.push({
+                    key: '  ',
+                    value: func.getName(),
+                    label: `Function - ${func.getName()}`,
+                    type: 'function'
+                });
+
+            });
+
+
+            return _this.cliPromptSelect('Select the functions you wish to attach the dependency:', choices, true, 'Attach')
+                .then(function(items) {
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].toggled) {
+                            if (items[i].type === "function") _this.evt.options.selectedFunctions.push(items[i].value);
+                        }
+                    }
+
+                    // Blank space for neatness in the CLI
+                    console.log('');
+                })
+        }
+
+        _processFunctions() {
+            let _this = this;
+
+            if(_this.evt.options.selectedFunctions && _this.evt.options.selectedFunctions.length > 0){
+                console.log(_this.evt.options.selectedFunctions)
+                _(_this.evt.options.selectedFunctions).forEach(function(funcName){
+                    console.log(_this.project.getFunction(funcName).getRootPath());
+                });
+            }else {
+                return BbPromise.resolve();
+            }
         }
 
     }
