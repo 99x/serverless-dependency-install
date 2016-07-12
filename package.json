@@ -1,17 +1,17 @@
 {
-    "name": "serverless-dependency-install",
-    "version": "0.0.3",
-    "engines": {
-        "node": ">=4.0"
-    },
-    "description": "Executes npm install for all the package.json files inside serverless project directory with a single command.This plugin also allows to define local shared dependencies in package.json.",
-    "author": "99xtechnology.com",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/99xt/serverless-dependency-install"
-    },
-    "keywords": [
+  "name": "serverless-dependency-install",
+  "version": "0.0.3",
+  "engines": {
+    "node": ">=4.0"
+  },
+  "description": "Executes npm install for all the package.json files inside serverless project directory with a single command.This plugin also allows to define local shared dependencies in package.json.",
+  "author": "99xtechnology.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/99xt/serverless-dependency-install"
+  },
+  "keywords": [
     "serverless framework plugin",
     "serverless applications",
     "serverless plugins",
@@ -31,17 +31,19 @@
     "amazon web services",
     "serverless.com"
   ],
-    "main": "index.js",
-    "bin": {},
-    "scripts": {
-        "test": "echo \"Warning: no test specified\" && exit 0"
-    },
-    "devDependencies": {
-        "chai": "^3.2.0",
-        "mocha": "^2.2.5"
-    },
-    "dependencies": {
-        "dependency-install": "0.0.6",
-        "mkdirp": "^0.5.1"
-    }
+  "main": "index.js",
+  "bin": {},
+  "scripts": {
+    "test": "echo \"Warning: no test specified\" && exit 0"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "dependency-install": "0.0.6",
+    "jsonfile": "^2.3.1",
+    "lodash": "^4.13.1",
+    "mkdirp": "^0.5.1"
+  }
 }

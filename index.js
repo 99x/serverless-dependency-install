@@ -4,11 +4,14 @@ const BbPromise = require('bluebird'),
     di = require('dependency-install'),
     fs = require('fs'),
     mkdirp = require('mkdirp'),
+    _ = require('lodash'),
+    jsonfile = require('jsonfile'),
     path = require('path');
 
 module.exports = function(S) {
 
     const SCli = require(S.getServerlessPath('utils/cli')),
+        SError = require(S.getServerlessPath('Error')),
         SUtils = S.utils;
 
     class DependencyInstall extends S.classes.Plugin {
@@ -44,6 +47,17 @@ module.exports = function(S) {
                 context: 'dependency',
                 contextAction: 'install'
             });
+            S.addAction(this.add.bind(this), {
+                handler: 'dependencyAdd',
+                description: 'Add dependency to functions',
+                context: 'dependency',
+                contextAction: 'add',
+                options: [{
+                    option: 'name',
+                    shortcut: 'n',
+                    description: 'Add dependency to functions.'
+                }]
+            });
 
             return BbPromise.resolve();
         }
@@ -59,13 +73,14 @@ module.exports = function(S) {
             let _this = this,
                 createDependency = function() {
                     let dependencyName = evt.options.name,
-                        sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
-                        dependencyPath = path.join(sharedDirPath + "/" + dependencyName),
-                        indexJs = fs.readFileSync(path.dirname(__filename) + '/template/index.js');
+                        sharedDirPath = S.getProject().custom.shared || path.join(S.getProject().getRootPath(), "shared"),
+                        dependencyPath = path.join(sharedDirPath, dependencyName),
+                        indexJs = fs.readFileSync(path.join(path.dirname(__filename), 'template', 'index.js'));
 
                     if (!SUtils.dirExistsSync(dependencyPath)) {
                         mkdirp.sync(dependencyPath);
                         fs.writeFileSync(path.join(dependencyPath, 'index.js'), indexJs);
+                        SCli.log("Dependency path: " + dependencyPath);
                         SCli.log("Dependency created successfully".yellow);
                     } else {
                         SCli.log("Dependency package already exists".red);
@@ -86,6 +101,19 @@ module.exports = function(S) {
                     SCli.log("Dependencies installed successfully.");
                 });
             });
+        }
+
+        add(evt) {
+            let _this = this;
+            _this.evt = evt;
+            _this.project = S.getProject();
+            _this.evt.options.selectedFunctions = [];
+
+            return _this._prompt()
+                .bind(_this)
+                .then(_this._checkDependencyExistance)
+                .then(_this._captureFunctions)
+                .then(_this._processFunctions);
         }
 
         _prompt() {
@@ -118,6 +146,74 @@ module.exports = function(S) {
                     return _this.cliPromptInput(prompts, overrides)
                         .then(answers => _this.evt.options.name = answers.name);
                 });
+        }
+
+        _checkDependencyExistance() {
+            let _this = this,
+                sharedDirPath = S.getProject().custom.shared || path.join(S.getProject().getRootPath(), "shared");
+
+            SCli.log("Dependency root: " + sharedDirPath);
+            if (!SUtils.dirExistsSync(path.join(sharedDirPath, _this.evt.options.name))) {
+                SCli.log("Cannot find dependency in the shared directory path. Please create the dependency module first.".red);
+                return BbPromise.reject(new SError('Cannot find dependency'));
+            } else {
+                return BbPromise.resolve();
+            }
+        }
+
+        _captureFunctions() {
+            let _this = this,
+                functions = SUtils.getFunctionsByCwd(_this.project.getAllFunctions()),
+                choices = [];
+
+            _.each(functions, function(func) {
+
+                choices.push({
+                    key: '  ',
+                    value: func.getName(),
+                    label: `Function - ${func.getName()}`,
+                    type: 'function'
+                });
+
+            });
+
+
+            return _this.cliPromptSelect('Select the functions you wish to add the dependency:', choices, true, 'Add')
+                .then(function(items) {
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].toggled) {
+                            if (items[i].type === "function") _this.evt.options.selectedFunctions.push(items[i].value);
+                        }
+                    }
+
+                    // Blank space for neatness in the CLI
+                    console.log('');
+                });
+        }
+
+        _processFunctions() {
+            let _this = this;
+
+            if (_this.evt.options.selectedFunctions && _this.evt.options.selectedFunctions.length > 0) {
+                _(_this.evt.options.selectedFunctions).forEach(function(funcName) {
+                    let func = _this.project.getFunction(funcName),
+                        funcPackageJsonPath = path.join(func.getRootPath(), "package.json");
+
+                    jsonfile.readFile(funcPackageJsonPath, function(err, obj) {
+                        if (!obj.customDependencies) {
+                            obj.customDependencies = {};
+                        }
+                        obj.customDependencies[_this.evt.options.name] = "local";
+                        jsonfile.writeFileSync(funcPackageJsonPath, obj, {
+                            spaces: 4
+                        });
+                    });
+
+                });
+                SCli.log("Dependency added to the selected functions successfully".yellow);
+            } else {
+                return BbPromise.resolve();
+            }
         }
 
     }
