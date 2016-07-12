@@ -63,7 +63,7 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
         }
     }
     ```
-    * enter following command in command prompt.
+    * Execute following command in command prompt.
     ```javascript
     sls dependency add
     ```
