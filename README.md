@@ -53,7 +53,7 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
     ```
 
 3. You can follow either of following steps to add a dependency to a function.
-    1. Open a package.json file in your code base which depends on a local shared dependency (lets say 'dependency-a' and 'dependency-b') and include the section 'customDependencies', as shown below.
+    * Open a package.json file in your code base which depends on a local shared dependency (lets say 'dependency-a' and 'dependency-b') and include the section 'customDependencies', as shown below.
     ```json
     {
         "dependencies": {},
@@ -63,8 +63,7 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
         }
     }
     ```
-
-    2. enter following command in command prompt.
+    * enter following command in command prompt.
     ```javascript
     sls dependency add
     ```
@@ -86,7 +85,7 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
         Serverless: Dependency added to the selected functions successfully
     ```
 
-3. To install local shared dependencies as well as npm dependencies use the same command
+4. To install local shared dependencies as well as npm dependencies use the same command
     ```javascript
     sls dependency install
     ```
