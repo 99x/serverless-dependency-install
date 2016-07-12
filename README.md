@@ -39,12 +39,12 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
             |__index.js   
             |__package.json // Optional if you have other npm dependencies
     ```
-    
+
     You can create a dependency-a by executing
     ```
     sls dependency create -n dependency-a
     ```
-    
+
 2. In `s-project.json` add `local_shared_dependencies` text to override default directory `shared`
     ```json
     "custom": {
@@ -52,7 +52,8 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
     }
     ```
 
-3. Open a package.json file in your code base which depends on a local shared dependency (lets say 'dependency-a' and 'dependency-b') and include the section 'customDependencies', as shown below.
+3. You can follow either of following steps to add a dependency to a function.
+    1. Open a package.json file in your code base which depends on a local shared dependency (lets say 'dependency-a' and 'dependency-b') and include the section 'customDependencies', as shown below.
     ```json
     {
         "dependencies": {},
@@ -62,11 +63,33 @@ What if you need to share code, but don't wish to publish packages in NPM Regist
         }
     }
     ```
-    
+
+    2. enter following command in command prompt.
+    ```javascript
+    sls dependency add
+    ```
+    It will ask you for a dependency name. You can enter a dependency name and press enter. Then it will prompt you for a list of available functions. Mark the functions you want to add this dependency and navigate to `Add` and press enter. Then Serverless will alter package.json files appropriately.
+
+    ```
+        sls dependency add
+        Serverless: Enter the name of dependency:  test
+        Serverless: Dependency root: /your/project/path
+        Serverless: Select the functions you wish to add the dependency:
+              Function - functionA
+              Function - functionB
+              Function - functionC
+              Function - functionD
+            - - - - -
+          > Add
+            Cancel
+
+        Serverless: Dependency added to the selected functions successfully
+    ```
+
 3. To install local shared dependencies as well as npm dependencies use the same command
     ```javascript
     sls dependency install
     ```
-    
+
 ## License
   [MIT](LICENSE)
