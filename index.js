@@ -11,6 +11,7 @@ const BbPromise = require('bluebird'),
 module.exports = function(S) {
 
     const SCli = require(S.getServerlessPath('utils/cli')),
+        SError = require(S.getServerlessPath('Error')),
         SUtils = S.utils;
 
     class DependencyInstall extends S.classes.Plugin {
@@ -46,15 +47,15 @@ module.exports = function(S) {
                 context: 'dependency',
                 contextAction: 'install'
             });
-            S.addAction(this.attach.bind(this), {
-                handler: 'dependencyAttach',
-                description: 'Attach dependency to functions',
+            S.addAction(this.add.bind(this), {
+                handler: 'dependencyAdd',
+                description: 'Add dependency to functions',
                 context: 'dependency',
-                contextAction: 'attach',
+                contextAction: 'add',
                 options: [{
                     option: 'name',
                     shortcut: 'n',
-                    description: 'Creates a new dependency in shared directory.'
+                    description: 'Add dependency to functions.'
                 }]
             });
 
@@ -72,13 +73,14 @@ module.exports = function(S) {
             let _this = this,
                 createDependency = function() {
                     let dependencyName = evt.options.name,
-                        sharedDirPath = S.getProject().custom.shared || S.getProject().getRootPath() + "/shared",
-                        dependencyPath = path.join(sharedDirPath + "/" + dependencyName),
-                        indexJs = fs.readFileSync(path.dirname(__filename) + '/template/index.js');
+                        sharedDirPath = S.getProject().custom.shared || path.join(S.getProject().getRootPath(), "shared"),
+                        dependencyPath = path.join(sharedDirPath, dependencyName),
+                        indexJs = fs.readFileSync(path.join(path.dirname(__filename), 'template', 'index.js'));
 
                     if (!SUtils.dirExistsSync(dependencyPath)) {
                         mkdirp.sync(dependencyPath);
                         fs.writeFileSync(path.join(dependencyPath, 'index.js'), indexJs);
+                        SCli.log("Dependency path: " + dependencyPath);
                         SCli.log("Dependency created successfully".yellow);
                     } else {
                         SCli.log("Dependency package already exists".red);
@@ -101,7 +103,7 @@ module.exports = function(S) {
             });
         }
 
-        attach(evt) {
+        add(evt) {
             let _this = this;
             _this.evt = evt;
             _this.project = S.getProject();
@@ -109,6 +111,7 @@ module.exports = function(S) {
 
             return _this._prompt()
                 .bind(_this)
+                .then(_this._checkDependencyExistance)
                 .then(_this._captureFunctions)
                 .then(_this._processFunctions);
         }
@@ -145,6 +148,19 @@ module.exports = function(S) {
                 });
         }
 
+        _checkDependencyExistance() {
+            let _this = this,
+                sharedDirPath = S.getProject().custom.shared || path.join(S.getProject().getRootPath(), "shared");
+
+            SCli.log("Dependency root: " + sharedDirPath);
+            if (!SUtils.dirExistsSync(path.join(sharedDirPath, _this.evt.options.name))) {
+                SCli.log("Cannot find dependency in the shared directory path. Please create the dependency module first.".red);
+                return BbPromise.reject(new SError('Cannot find dependency'));
+            } else {
+                return BbPromise.resolve();
+            }
+        }
+
         _captureFunctions() {
             let _this = this,
                 functions = SUtils.getFunctionsByCwd(_this.project.getAllFunctions()),
@@ -162,7 +178,7 @@ module.exports = function(S) {
             });
 
 
-            return _this.cliPromptSelect('Select the functions you wish to attach the dependency:', choices, true, 'Attach')
+            return _this.cliPromptSelect('Select the functions you wish to add the dependency:', choices, true, 'Add')
                 .then(function(items) {
                     for (let i = 0; i < items.length; i++) {
                         if (items[i].toggled) {
@@ -189,11 +205,12 @@ module.exports = function(S) {
                         }
                         obj.customDependencies[_this.evt.options.name] = "local";
                         jsonfile.writeFileSync(funcPackageJsonPath, obj, {
-                            spaces: 2
+                            spaces: 4
                         });
                     });
 
                 });
+                SCli.log("Dependency added to the selected functions successfully".yellow);
             } else {
                 return BbPromise.resolve();
             }
