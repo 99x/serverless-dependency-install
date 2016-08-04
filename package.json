@@ -41,6 +41,7 @@
     "mocha": "^2.2.5"
   },
   "dependencies": {
+    "bluebird": "^3.0.6",
     "dependency-install": "0.0.6",
     "jsonfile": "^2.3.1",
     "lodash": "^4.13.1",
