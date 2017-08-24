@@ -34,7 +34,7 @@
   "main": "index.js",
   "bin": {},
   "scripts": {
-    "test": "echo \"Warning: no test specified\" && exit 0"
+    "test": "echo \"No tests added\""
   },
   "devDependencies": {
     "chai": "^3.2.0",
